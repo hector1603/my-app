@@ -73,69 +73,44 @@ body {
     text-align: center;
 }
 
-.valentine-check {
-    background-color: #0a001a !important;
-}
-
-.checkbox-container {
+/* Button Container */
+.button-container {
     display: flex;
-    flex-direction: row;
-    gap: 15px;
-    width: 100%;
-    justify-content: space-between;
-
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 25px;
+    animation: fadeIn 1.2s ease 2.5s both;
 }
 
-.custom-checkbox {
+.yes-btn {
+    background: rgba(255, 45, 85, 0.1);
+    border: 2px solid var(--heart-red);
+    color: white;
+    padding: 14px 32px;
+    border-radius: 50px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 0 15px rgba(255, 45, 85, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    outline: none;
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-    background: var(--glass-bg);
-    padding: 18px;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(15px);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.custom-checkbox:hover {
-    border-color: var(--heart-red);
-    box-shadow: 0 0 20px rgba(255, 45, 85, 0.2);
-}
-
-.custom-checkbox:active {
-    transform: scale(0.96);
-}
-
-.checkmark {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--heart-red);
-    border-radius: 8px;
-    margin-right: 15px;
-    display: inline-block;
-    position: relative;
-}
-
-.custom-checkbox input:checked+.checkmark {
+.yes-btn:hover {
     background: var(--heart-red);
+    transform: scale(1.1) translateY(-3px);
+    box-shadow: 0 0 35px rgba(255, 45, 85, 0.6);
 }
 
-.custom-checkbox input:checked+.checkmark::after {
-    content: '✓';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 16px;
-    color: white;
-}
-
-.label-text {
-    font-weight: 500;
-    font-size: 1.2rem;
-    letter-spacing: 0.5px;
+.yes-btn:active {
+    transform: scale(0.95);
 }
 
 /* Modal Enhancements */

