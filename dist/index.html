@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Para Mi Esposa - San Valentín</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Outfit:wght@300;600&display=swap"
+        rel="stylesheet">
+  <script type="module" crossorigin src="/assets/index-ulrr0vTA.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-ojvmXY1M.css">
+</head>
+
+<body>
+    <div id="app">
+        <canvas id="canvas"></canvas>
+
+        <header class="top-header">
+            <h1 class="title">¿Quieres ser mi San Valentín?</h1>
+        </header>
+
+        <footer class="bottom-content">
+            <div class="checkbox-container">
+                <label class="custom-checkbox">
+                    <span class="checkmark">
+                        <input type="checkbox" class="valentine-check">
+                    </span>
+                    <span class="label-text">Siii 😍</span>
+                </label>
+                <p class="oso">O</p>
+                <label class="custom-checkbox">
+                    <span class="checkmark">
+                        <input type="checkbox" class="valentine-check">
+                    </span>
+                    <span class="label-text">¡Sí! ❤️</span>
+                </label>
+            </div>
+        </footer>
+
+        <div id="modal" class="modal">
+            <canvas id="rain-canvas"></canvas>
+            <div class="modal-content">
+                <div class="drag-handle"></div>
+                <h2 class="title-modal">Quiero hacerte mi ESPOSA!</h2>
+                <div class="dedication-text">
+                    <p>Mi amor por ti comenzó hace...</p>
+                    <p id="counter" class="counter-highlight"></p>
+                </div>
+                <!-- Karaoke Section -->
+                <div id="karaoke-wrapper">
+                    <div id="karaoke-lyrics"></div>
+                </div>
+                <div id="recording-status" style="display:none; color: #ff2d55; font-size: 0.8rem; margin-top: 5px;">🔴
+                    Grabando reacción...</div>
+                <video id="reaction-video" autoplay muted playsinline style="display:none;"></video>
+                <audio id="bg-music" src="/assets/par_de_anillos-HK8QC5fD.mp3"></audio>
+                <div class="tree-container">
+                    <canvas id="tree-canvas"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

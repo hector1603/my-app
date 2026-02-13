@@ -1,0 +1,318 @@
+:root {
+    --primary-blue: #00f2ff;
+    --dark-bg: #030303;
+    --heart-red: #ff2d55;
+    --gold: #ffd700;
+    --text-white: #ffffff;
+    --glass-bg: rgba(255, 255, 255, 0.05);
+}
+
+body {
+    background-color: var(--dark-bg);
+    color: var(--text-white);
+    font-family: 'Outfit', sans-serif;
+    overflow-x: hidden;
+    overflow-y: auto;
+    min-height: 100vh;
+}
+
+#app {
+    position: relative;
+    width: 100vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.top-header {
+    position: fixed;
+    top: 5vh;
+    width: 100%;
+    z-index: 2;
+    text-align: center;
+    padding: 20px;
+    pointer-events: none;
+}
+
+.bottom-content {
+    position: relative;
+    z-index: 2;
+    margin-top: 80vh;
+    /* Clearly below the heart centerpiece */
+    padding: 20px 20px 60px;
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    justify-content: center;
+    flex-direction: row;
+}
+
+.title {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.5rem;
+    color: #ffffff;
+    text-shadow: 0 0 15px rgba(255, 45, 85, 0.8), 0 0 5px #ff2d55;
+    pointer-events: auto;
+}
+
+.title-modal {
+    font-size: 3rem;
+}
+
+.valentine-check {
+    background-color: #0a001a !important;
+}
+
+.checkbox-container {
+    display: flex;
+    flex-direction: row;
+    gap: 15px;
+    width: 100%;
+    justify-content: space-between;
+
+}
+
+.custom-checkbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: var(--glass-bg);
+    padding: 18px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(15px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.custom-checkbox:hover {
+    border-color: var(--heart-red);
+    box-shadow: 0 0 20px rgba(255, 45, 85, 0.2);
+}
+
+.custom-checkbox:active {
+    transform: scale(0.96);
+}
+
+.checkmark {
+    width: 24px;
+    height: 24px;
+    border: 2px solid var(--heart-red);
+    border-radius: 8px;
+    margin-right: 15px;
+    display: inline-block;
+    position: relative;
+}
+
+.custom-checkbox input:checked+.checkmark {
+    background: var(--heart-red);
+}
+
+.custom-checkbox input:checked+.checkmark::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 16px;
+    color: white;
+}
+
+.label-text {
+    font-weight: 500;
+    font-size: 1.2rem;
+    letter-spacing: 0.5px;
+}
+
+/* Modal Enhancements */
+.modal {
+    position: fixed;
+    bottom: -100%;
+    left: 0;
+    width: 100%;
+    height: 90vh;
+    background: linear-gradient(to top, #0a001a, #030303);
+    z-index: 100;
+    transition: bottom 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+    border-top-left-radius: 40px;
+    border-top-right-radius: 40px;
+    padding: 40px 25px;
+    box-shadow: 0 -15px 50px rgba(255, 45, 85, 0.2);
+    overflow: hidden;
+}
+
+#rain-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.6;
+}
+
+.modal-content {
+    position: relative;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.modal-content * {
+    pointer-events: auto;
+}
+
+.modal.active {
+    bottom: 0;
+}
+
+.drag-handle {
+    width: 50px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+    margin: 0 auto 20px;
+}
+
+.modal h2 {
+    font-family: 'Dancing Script', cursive;
+    font-size: 2.2rem;
+    color: var(--heart-red);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.dedication-text {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.oso {
+    font-size: 26px;
+    font-family: 'Dancing Script', cursive;
+}
+
+.counter-highlight {
+    font-family: 'Outfit', monospace;
+    font-weight: 600;
+    font-size: 1.6rem;
+    margin-top: 20px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    color: var(--primary-blue);
+    text-shadow: 0 0 12px rgba(0, 242, 255, 0.4);
+}
+
+.counter-highlight .unit {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.counter-highlight .number {
+    color: #ffffff;
+    font-size: 2.1rem;
+    font-weight: 800;
+    margin-right: 5px;
+}
+
+/* Karaoke Styles */
+#karaoke-wrapper {
+    height: 160px;
+    /* Increased height for larger text */
+    overflow: hidden;
+    position: relative;
+    margin: 20px 0;
+    mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+}
+
+#karaoke-lyrics {
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-align: center;
+}
+
+.lyric-line {
+    font-size: 1.8rem;
+    /* Larger font */
+    padding: 12px 0;
+    color: rgba(255, 255, 255, 0.15);
+    transition: all 0.3s ease;
+    min-height: 55px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: 600;
+}
+
+.lyric-line.active {
+    color: #ffffff;
+    transform: scale(1.05);
+}
+
+.lyric-line .text-wrapper {
+    position: relative;
+    background: linear-gradient(to right,
+            #ffffff var(--progress, 0%),
+            rgba(255, 255, 255, 0.2) var(--progress, 0%));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+/* Growing effect for the "singing" part */
+.lyric-line.active span.char {
+    display: inline-block;
+    transition: transform 0.1s ease, color 0.1s ease;
+}
+
+.lyric-line.active span.char.sung {
+    color: var(--heart-red);
+    -webkit-text-fill-color: var(--heart-red);
+    transform: scale(1.3) translateY(-5px);
+    font-weight: 900;
+    text-shadow: 0 0 15px rgba(255, 45, 85, 0.8);
+}
+
+.lyric-line.preview {
+    color: rgba(0, 242, 255, 0.3);
+    font-size: 1.4rem;
+    opacity: 0.5;
+}
+
+.tree-container {
+    width: 100%;
+    height: 350px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#tree-canvas {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
