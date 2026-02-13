@@ -431,28 +431,28 @@ function animateRain() {
     requestAnimationFrame(animateRain);
 }
 
-// Calibrated timings (shifted ~2s earlier to prevent lag)
+// Recalibrated timings to match the song exactly (removing the previous offset)
 const karaokeLines = [
-    { start: 12.5, duration: 3.5, text: "Te prometo que el domingo" },
-    { start: 16.5, duration: 3.5, text: "Haré realidad tu sueño" },
-    { start: 22.0, duration: 3.5, text: "Entraremos a la iglesia" },
-    { start: 26.0, duration: 4.0, text: "Para ser al fin tu dueño" },
-    { start: 32.5, duration: 3.5, text: "Llevaras vestido blanco" },
-    { start: 36.5, duration: 3.5, text: "Y flores entre tus manos" },
-    { start: 42.0, duration: 3.5, text: "De orgullo estarán llorando" },
-    { start: 46.0, duration: 4.5, text: "Tus padres y tus hermanos" },
-    { start: 52.5, duration: 4.0, text: "Y frente al Creador que es todo" },
-    { start: 57.5, duration: 4.0, text: "Haremos una promesa" },
-    { start: 62.5, duration: 4.5, text: "De vivir toda la vida" },
-    { start: 67.5, duration: 4.5, text: "En la riqueza o pobreza" },
-    { start: 72.5, duration: 4.0, text: "Y cuando demos el sí" },
-    { start: 77.5, duration: 4.0, text: "Lo haremos con la esperanza" },
-    { start: 82.5, duration: 4.5, text: "De no quitarnos jamás" },
-    { start: 87.5, duration: 4.5, text: "Amor, este par de alianzas" },
-    { start: 92.5, duration: 3.5, text: "Ese par de anillos" },
-    { start: 96.5, duration: 5.0, text: "Con nuestros nombres grabados" },
-    { start: 102.5, duration: 3.5, text: "Ese par de anillos" },
-    { start: 106.5, duration: 5.0, text: "Para dos enamorados" }
+    { start: 14.5, duration: 3.5, text: "Te prometo que el domingo" },
+    { start: 18.5, duration: 3.5, text: "Haré realidad tu sueño" },
+    { start: 24.0, duration: 3.5, text: "Entraremos a la iglesia" },
+    { start: 28.0, duration: 4.0, text: "Para ser al fin tu dueño" },
+    { start: 34.5, duration: 3.5, text: "Llevaras vestido blanco" },
+    { start: 38.5, duration: 3.5, text: "Y flores entre tus manos" },
+    { start: 44.0, duration: 3.5, text: "De orgullo estarán llorando" },
+    { start: 48.0, duration: 4.5, text: "Tus padres y tus hermanos" },
+    { start: 54.5, duration: 4.0, text: "Y frente al Creador que es todo" },
+    { start: 59.5, duration: 4.0, text: "Haremos una promesa" },
+    { start: 64.5, duration: 4.5, text: "De vivir toda la vida" },
+    { start: 69.5, duration: 4.5, text: "En la riqueza o pobreza" },
+    { start: 74.5, duration: 4.0, text: "Y cuando demos el sí" },
+    { start: 79.5, duration: 4.0, text: "Lo haremos con la esperanza" },
+    { start: 84.5, duration: 4.5, text: "De no quitarnos jamás" },
+    { start: 89.5, duration: 4.5, text: "Amor, este par de alianzas" },
+    { start: 94.5, duration: 3.5, text: "Ese par de anillos" },
+    { start: 98.5, duration: 5.0, text: "Con nuestros nombres grabados" },
+    { start: 104.5, duration: 3.5, text: "Ese par de anillos" },
+    { start: 108.5, duration: 5.0, text: "Para dos enamorados" }
 ];
 
 let mediaRecorder;
@@ -461,27 +461,56 @@ const recordingStatus = document.getElementById('recording-status');
 let audioContext;
 let mixedStream;
 
+// Google Apps Script Webhook URL for internal Drive upload
+const DRIVE_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbxLbNE82x9H6kuA_uAztJaGXOOD1uIDHdN02_vyaAVBxSFc1ph-Fs3weE0FhKfabKH1iA/exec";
+
+async function uploadToDrive(blob) {
+    if (!DRIVE_WEBHOOK_URL) {
+        console.warn("Google Drive Webhook URL no configurada. El video se descargará localmente.");
+        return false;
+    }
+
+    try {
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
+        reader.onloadend = async () => {
+            const base64data = reader.result.split(',')[1];
+            const response = await fetch(DRIVE_WEBHOOK_URL, {
+                method: "POST",
+                body: JSON.stringify({
+                    filename: `reaccion_${new Date().getTime()}.webm`,
+                    mimeType: "video/webm",
+                    data: base64data
+                })
+            });
+            if (response.ok) console.log("Video subido a Google Drive exitosamente.");
+        };
+        return true;
+    } catch (err) {
+        console.error("Error al subir a Drive:", err);
+        return false;
+    }
+}
+
 async function startRecording() {
     try {
         const music = document.getElementById('bg-music');
-        const videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: true });
+        // Solicitar permisos solo al momento de la acción
+        const videoStream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } },
+            audio: true
+        });
 
-        // Setup Audio Mixing (Internal + External)
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         const micSource = audioContext.createMediaStreamSource(videoStream);
 
-        // Create source from music element
-        // Note: captureStream might require a user interaction context or CORS
         const musicStream = music.captureStream ? music.captureStream() : music.mozCaptureStream();
         const musicSource = audioContext.createMediaStreamSource(musicStream);
 
         const destination = audioContext.createMediaStreamDestination();
-
-        // Connect both to destination
         micSource.connect(destination);
         musicSource.connect(destination);
 
-        // Combine video track with mixed audio stream
         mixedStream = new MediaStream([
             ...videoStream.getVideoTracks(),
             ...destination.stream.getAudioTracks()
@@ -494,13 +523,18 @@ async function startRecording() {
         mediaRecorder.ondataavailable = (e) => {
             if (e.data.size > 0) recordedChunks.push(e.data);
         };
-        mediaRecorder.onstop = () => {
+        mediaRecorder.onstop = async () => {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none'; a.href = url; a.download = `reaccion_karaoke_${new Date().getTime()}.webm`;
-            document.body.appendChild(a); a.click();
-            setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
+
+            // Intentar subir a Drive, si falla o no hay URL, descargar local
+            const uploaded = await uploadToDrive(blob);
+            if (!uploaded) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none'; a.href = url; a.download = `reaccion_karaoke_${new Date().getTime()}.webm`;
+                document.body.appendChild(a); a.click();
+                setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
+            }
             recordedChunks = [];
         };
 
@@ -508,6 +542,7 @@ async function startRecording() {
         if (recordingStatus) recordingStatus.style.display = 'block';
     } catch (err) {
         console.error("Recording error:", err);
+        alert("Para grabar la reacción, por favor permite el acceso a la cámara y micrófono.");
     }
 }
 
