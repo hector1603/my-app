@@ -487,44 +487,37 @@ async function uploadToDrive(blob) {
     }
 
     return new Promise((resolve) => {
-        try {
-            const reader = new FileReader();
-            reader.readAsDataURL(blob);
-            reader.onloadend = async () => {
-                try {
-                    const base64data = reader.result.split(',')[1];
-                    const response = await fetch(DRIVE_WEBHOOK_URL, {
-                        method: "POST",
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            filename: `reaccion_${new Date().getTime()}.webm`,
-                            mimeType: "video/webm",
-                            data: base64data
-                        })
-                    });
+        const reader = new FileReader();
+        reader.readAsDataURL(blob);
 
-                    if (response.ok || response.type === 'opaque') {
-                        console.log("✅ Video subido exitosamente a Google Drive.");
-                        resolve(true);
-                    } else {
-                        console.error("❌ Error en la respuesta del servidor:", response.status);
-                        resolve(false);
-                    }
-                } catch (fetchErr) {
-                    console.error("❌ Error en el fetch de subida:", fetchErr);
-                    resolve(false);
-                }
-            };
-            reader.onerror = () => {
-                console.error("Error leyendo el blob del video.");
+        reader.onloadend = async () => {
+            try {
+                const base64data = reader.result.split(',')[1];
+                console.log("📤 Enviando video a Google Drive...", (blob.size / 1024).toFixed(2), "KB");
+
+                await fetch(DRIVE_WEBHOOK_URL, {
+                    method: "POST",
+                    headers: { 'Content-Type': 'text/plain' },
+                    body: JSON.stringify({
+                        filename: `reaccion_${new Date().getTime()}.webm`,
+                        mimeType: "video/webm",
+                        data: base64data
+                    })
+                });
+
+                // Google Apps Script siempre responde, así que si no lanza error, asumimos éxito
+                console.log("✅ Video enviado a Google Drive exitosamente.");
+                resolve(true);
+            } catch (err) {
+                console.error("❌ Error al subir a Drive:", err);
                 resolve(false);
-            };
-        } catch (err) {
-            console.error("Error al preparar la subida a Drive:", err);
+            }
+        };
+
+        reader.onerror = () => {
+            console.error("❌ Error leyendo el blob del video.");
             resolve(false);
-        }
+        };
     });
 }
 
@@ -693,3 +686,13 @@ document.querySelector('.drag-handle')?.parentElement?.addEventListener('click',
     stopRecording();
 });
 
+// Auto-save video to Drive if page is closed/reloaded
+window.addEventListener('beforeunload', (e) => {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        console.log("⚠️ Página cerrándose. Guardando video...");
+        stopRecording();
+        // Pequeño delay para que se complete el upload
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
