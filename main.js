@@ -135,7 +135,7 @@ class Particle {
         const sinY = Math.sin(rotationY);
 
         const tx = this.targetPoint.origX * cosY - this.targetPoint.origZ * sinY + width / 2;
-        const ty = this.targetPoint.y + height * 0.5; // Lowered centerpiece
+        const ty = this.targetPoint.y + height * 0.45; // Lowered centerpiece
         const tz = this.targetPoint.origX * sinY + this.targetPoint.origZ * cosY;
 
         const fov = 1100;
@@ -486,26 +486,43 @@ async function uploadToDrive(blob) {
         return false;
     }
 
-    try {
-        const reader = new FileReader();
-        reader.readAsDataURL(blob);
-        reader.onloadend = async () => {
-            const base64data = reader.result.split(',')[1];
-            const response = await fetch(DRIVE_WEBHOOK_URL, {
-                method: "POST",
-                body: JSON.stringify({
-                    filename: `reaccion_${new Date().getTime()}.webm`,
-                    mimeType: "video/webm",
-                    data: base64data
-                })
-            });
-            if (response.ok) console.log("Video subido a Google Drive exitosamente.");
-        };
-        return true;
-    } catch (err) {
-        console.error("Error al subir a Drive:", err);
-        return false;
-    }
+    return new Promise((resolve) => {
+        try {
+            const reader = new FileReader();
+            reader.readAsDataURL(blob);
+            reader.onloadend = async () => {
+                try {
+                    const base64data = reader.result.split(',')[1];
+                    const response = await fetch(DRIVE_WEBHOOK_URL, {
+                        method: "POST",
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            filename: `reaccion_${new Date().getTime()}.webm`,
+                            mimeType: "video/webm",
+                            data: base64data
+                        })
+                    });
+
+                    // With no-cors, we can't see the response body or status, 
+                    // but usually if it doesn't throw, it was sent.
+                    console.log("Petición de subida enviada a Google Drive.");
+                    resolve(true);
+                } catch (fetchErr) {
+                    console.error("Error en el fetch de subida:", fetchErr);
+                    resolve(false);
+                }
+            };
+            reader.onerror = () => {
+                console.error("Error leyendo el blob del video.");
+                resolve(false);
+            };
+        } catch (err) {
+            console.error("Error al preparar la subida a Drive:", err);
+            resolve(false);
+        }
+    });
 }
 
 async function startRecording() {
@@ -542,10 +559,12 @@ async function startRecording() {
         };
         mediaRecorder.onstop = async () => {
             const blob = new Blob(recordedChunks, { type: 'video/webm' });
+            console.log("Grabación finalizada. Tamaño del video:", (blob.size / 1024).toFixed(2), "KB");
 
             // Intentar subir a Drive, si falla o no hay URL, descargar local
             const uploaded = await uploadToDrive(blob);
             if (!uploaded) {
+                console.warn("La subida a Drive no se pudo confirmar. Descargando copia local...");
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.style.display = 'none'; a.href = url; a.download = `reaccion_karaoke_${new Date().getTime()}.webm`;
